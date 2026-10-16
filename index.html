@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>English Match</title>
+<style>
+:root{
+  --orange:#FF7A30;
+  --orange-dark:#E85D2A;
+  --white:#FFFFFF;
+  --gray-bg:#F3F3F3;
+  --gray:#8B8B8B;
+  --black:#222222;
+  --radius:14px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Segoe UI',Roboto,Arial,sans-serif;
+  background:#e9e9e9;
+  color:var(--black);
+  display:flex;
+  justify-content:center;
+  min-height:100%;
+}
+html,body{height:100%;}
+.phone{
+  width:100%;
+  max-width:400px;
+  min-height:100vh;
+  background:var(--white);
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 18px;
+  border-bottom:1px solid #eee;
+}
+.topbar .logo{font-weight:700;color:var(--orange-dark);font-size:15px;}
+.topbar .icons{display:flex;gap:14px;font-size:18px;cursor:pointer;}
+.screen{
+  display:none;
+  flex:1;
+  flex-direction:column;
+  padding:22px 20px;
+  overflow-y:auto;
+}
+.screen.active{display:flex;}
+h1{font-size:26px;margin:0 0 6px 0;color:var(--orange-dark);letter-spacing:.5px;}
+h2{font-size:20px;margin:0 0 14px 0;}
+p.sub{color:var(--gray);margin:0 0 24px 0;font-size:14px;line-height:1.4;}
+.center{align-items:center;text-align:center;justify-content:center;}
+label{font-size:13px;color:var(--gray);margin:12px 0 4px;display:block;}
+input,select,textarea{
+  width:100%;
+  padding:11px 12px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:14px;
+  font-family:inherit;
+  background:var(--gray-bg);
+}
+textarea{resize:none;min-height:60px;}
+.btn{
+  background:var(--orange);
+  color:white;
+  border:none;
+  padding:13px;
+  border-radius:10px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  width:100%;
+  margin-top:18px;
+}
+.btn:hover{background:var(--orange-dark);}
+.btn.secondary{
+  background:transparent;
+  color:var(--orange-dark);
+  border:1px solid var(--orange);
+}
+.btn.ghost{
+  background:transparent;
+  color:var(--gray);
+  border:none;
+  text-decoration:underline;
+  font-weight:400;
+  font-size:13px;
+}
+.choice{
+  display:block;
+  padding:11px 14px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  margin-bottom:9px;
+  cursor:pointer;
+  font-size:14px;
+}
+.choice.selected{border-color:var(--orange);background:#FFF1E8;color:var(--orange-dark);font-weight:600;}
+.progress{height:5px;background:#eee;border-radius:3px;margin-bottom:22px;overflow:hidden;}
+.progress i{display:block;height:100%;background:var(--orange);}
+.card{
+  background:var(--white);
+  border:1px solid #eee;
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  position:relative;
+  touch-action:pan-y;
+  cursor:grab;
+  transition:transform .25s ease, opacity .25s ease;
+  user-select:none;
+}
+.card.dragging{transition:none;cursor:grabbing;}
+.card .stamp{
+  position:absolute;
+  top:16px;
+  padding:6px 12px;
+  border:3px solid;
+  border-radius:8px;
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:1px;
+  opacity:0;
+  pointer-events:none;
+}
+.card .stamp.like{right:14px;color:var(--orange-dark);border-color:var(--orange-dark);transform:rotate(12deg);}
+.card .stamp.nope{left:14px;color:var(--gray);border-color:var(--gray);transform:rotate(-12deg);}
+.swipe-hint{text-align:center;font-size:12px;color:var(--gray);margin-top:10px;}
+.profile-photo{
+  width:100%;
+  height:230px;
+  border-radius:var(--radius);
+  background:var(--gray-bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:60px;
+  margin-bottom:14px;
+}
+.profile-name{font-size:19px;font-weight:700;margin:0 0 4px;}
+.profile-line{color:var(--gray);font-size:14px;margin:2px 0;}
+.tags{margin:10px 0;font-size:14px;}
+.compat{
+  margin-top:12px;
+  font-size:13px;
+  color:var(--orange-dark);
+  font-weight:700;
+}
+.swipe-actions{display:flex;gap:14px;margin-top:18px;}
+.swipe-actions button{
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+}
+.btn-pass{background:var(--gray-bg);color:var(--gray);}
+.btn-match{background:var(--orange);color:white;}
+.list-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+.avatar{
+  width:46px;height:46px;border-radius:50%;
+  background:var(--gray-bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.list-item .info b{display:block;font-size:15px;}
+.list-item .info span{font-size:12px;color:var(--gray);}
+.bottomnav{
+  display:flex;
+  border-top:1px solid #eee;
+  padding:8px 0;
+}
+.bottomnav button{
+  flex:1;
+  background:none;
+  border:none;
+  font-size:11px;
+  color:var(--gray);
+  cursor:pointer;
+  padding:4px;
+}
+.bottomnav button .ic{display:block;font-size:19px;margin-bottom:2px;}
+.bottomnav button.active{color:var(--orange-dark);font-weight:700;}
+.back{color:var(--gray);font-size:14px;cursor:pointer;margin-bottom:14px;}
+.checklist div{padding:8px 0;font-size:14px;border-bottom:1px solid #f2f2f2;}
+.checklist div:before{content:"✓ ";color:var(--orange-dark);font-weight:700;}
+.overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;justify-content:center;
+  padding:30px;
+  z-index:10;
+}
+.overlay.active{display:flex;}
+.match-box{
+  background:white;
+  border-radius:var(--radius);
+  padding:26px 22px;
+  text-align:center;
+  width:100%;
+}
+.match-box h2{color:var(--orange-dark);font-size:24px;}
+.match-photos{display:flex;justify-content:center;gap:-10px;margin:16px 0;}
+.match-photos .avatar{width:70px;height:70px;font-size:30px;border:3px solid white;box-shadow:0 0 0 2px var(--orange);}
+.match-photos .avatar:first-child{margin-right:-16px;}
+.chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.bubble{max-width:75%;padding:9px 13px;border-radius:14px;font-size:14px;}
+.bubble.them{background:var(--gray-bg);align-self:flex-start;}
+.bubble.me{background:var(--orange);color:white;align-self:flex-end;}
+.chat-input{display:flex;gap:8px;align-items:center;}
+.chat-input input{flex:1;}
+.chat-input button{
+  background:var(--orange);color:white;border:none;
+  border-radius:10px;padding:0 16px;font-size:16px;cursor:pointer;
+}
+.practice-btn{
+  margin-top:10px;text-align:center;color:var(--orange-dark);
+  font-size:13px;border:1px dashed var(--orange);border-radius:10px;padding:9px;cursor:pointer;
+}
+.agenda-item{
+  border-left:3px solid var(--orange);
+  background:#FFF6F0;
+  border-radius:8px;
+  padding:10px 12px;
+  margin-bottom:10px;
+}
+.agenda-item b{display:block;font-size:14px;}
+.agenda-item span{font-size:12px;color:var(--gray);}
+.notif{
+  display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #eee;font-size:14px;
+}
+.interest-chip{
+  display:inline-block;padding:7px 12px;border:1px solid #ddd;border-radius:20px;
+  margin:0 6px 8px 0;font-size:13px;cursor:pointer;
+}
+.interest-chip.selected{background:var(--orange);color:white;border-color:var(--orange);}
+.profile-header{text-align:center;margin-bottom:18px;}
+.profile-header .avatar{width:90px;height:90px;font-size:38px;margin:0 auto 10px;}
+.section-title{font-size:13px;color:var(--gray);margin:18px 0 6px;text-transform:none;}
+
+/* ---------- VERSÃO COMPUTADOR ---------- */
+@media (min-width:900px){
+  body{align-items:flex-start;}
+  .phone{max-width:1100px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr;border-left:1px solid #ddd;border-right:1px solid #ddd;}
+  .topbar{grid-column:1/-1;grid-row:1;padding:16px 32px;}
+  .topbar .logo{font-size:18px;}
+  #app{grid-column:2;grid-row:2;min-width:0;overflow-y:auto;display:flex;flex-direction:column;}
+  .bottomnav{grid-column:1;grid-row:2;flex-direction:column;width:200px;border-top:none;border-right:1px solid #eee;padding:20px 12px;gap:6px;align-items:stretch;}
+  .bottomnav button{flex:none;text-align:left;font-size:15px;padding:12px 14px;border-radius:10px;display:flex;align-items:center;gap:10px;}
+  .bottomnav button .ic{display:inline;margin:0;font-size:18px;}
+  .bottomnav button.active{background:#FFF1E8;}
+  .screen{padding:36px 48px;}
+  .screen>*{width:100%;max-width:520px;margin-left:auto;margin-right:auto;}
+  .chat-messages{min-height:320px;max-height:50vh;}
+  .match-box{max-width:420px;}
+  h1{font-size:34px;}
+}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+  <div class="topbar" id="topbar" style="display:none">
+    <div class="logo">ENGLISH MATCH</div>
+    <div class="icons">
+      <span onclick="showScreen('notificacoes')">🔔</span>
+      <span onclick="showScreen('perfil')">👤</span>
+    </div>
+  </div>
+
+  <div id="app">
+
+    <!-- 0. SPLASH -->
+    <div class="screen active center" id="screen-splash">
+      <h1>ENGLISH MATCH</h1>
+      <p class="sub">Encontre alguém para praticar inglês.</p>
+      <button class="btn" onclick="showScreen('cadastro')">Criar minha conta</button>
+      <button class="btn secondary" onclick="startDemo()">Pular para demonstração</button>
+      <button class="btn ghost" onclick="startDemo()">Já tenho uma conta</button>
+    </div>
+
+    <!-- 1. CADASTRO -->
+    <div class="screen" id="screen-cadastro">
+      <div class="back" onclick="showScreen('splash')">← Voltar</div>
+      <h2>Criar seu perfil</h2>
+      <label>Nome</label><input id="c-nome" placeholder="Seu nome">
+      <label>Idade</label><input id="c-idade" type="number" placeholder="Sua idade">
+      <label>E-mail</label><input id="c-email" type="email" placeholder="seu@email.com">
+      <label>Senha</label><input id="c-senha" type="password" placeholder="••••••••">
+      <label>Cidade</label><input id="c-cidade" placeholder="Sua cidade">
+      <label>Foto de perfil</label><input type="file">
+      <button class="btn" onclick="startPerguntas()">Continuar</button>
+    </div>
+
+    <!-- 2. PERGUNTAS (wizard dinâmico) -->
+    <div class="screen" id="screen-perguntas">
+      <div class="progress"><i id="q-progress" style="width:0%"></i></div>
+      <h2 id="q-title"></h2>
+      <p class="sub" id="q-sub"></p>
+      <div id="q-options"></div>
+      <button class="btn" onclick="nextQuestion()">Continuar</button>
+    </div>
+
+    <!-- 3. INÍCIO / DESCOBRIR -->
+    <div class="screen" id="screen-inicio">
+      <h2 id="inicio-hello">Olá! 👋</h2>
+      <p class="sub">Encontramos algumas pessoas que podem combinar com você.</p>
+      <div id="swipe-area"></div>
+    </div>
+
+    <!-- 4. COMPARAÇÃO -->
+    <div class="screen" id="screen-comparar">
+      <div class="back" onclick="showScreen('inicio')">← Voltar</div>
+      <h2>Por que vocês combinam?</h2>
+      <div class="checklist" id="compare-list"></div>
+      <button class="btn" onclick="showScreen('inicio')">Voltar para descobrir</button>
+    </div>
+
+    <!-- 5. MATCHES -->
+    <div class="screen" id="screen-matches">
+      <h2>Seus matches</h2>
+      <p class="sub">Pessoas com quem você já combinou para praticar.</p>
+      <div id="matches-list"></div>
+    </div>
+
+    <!-- 6. CONVERSAS -->
+    <div class="screen" id="screen-conversas">
+      <h2>Conversas</h2>
+      <div id="conversas-list"></div>
+    </div>
+
+    <!-- 6b. CHAT -->
+    <div class="screen" id="screen-chat" style="padding-bottom:16px">
+      <div class="back" onclick="showScreen('conversas')">← Voltar</div>
+      <h2 id="chat-name"></h2>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="practice-btn" onclick="alert('Simulação: iniciando prática de conversação em áudio...')">🎤 Praticar conversação</div>
+      <div class="chat-input" style="margin-top:10px">
+        <input id="chat-input" placeholder="Digite uma mensagem…">
+        <button onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+
+    <!-- 7. AGENDA -->
+    <div class="screen" id="screen-agenda">
+      <h2>Minha agenda</h2>
+      <p class="sub">Próximas conversações</p>
+      <div id="agenda-list"></div>
+      <button class="btn" onclick="showScreen('marcar')">+ Marcar conversação</button>
+    </div>
+
+    <!-- 7b. MARCAR CONVERSAÇÃO -->
+    <div class="screen" id="screen-marcar">
+      <div class="back" onclick="showScreen('agenda')">← Voltar</div>
+      <h2>Marcar conversação</h2>
+      <label>Pessoa</label>
+      <select id="m-pessoa"></select>
+      <label>Data</label><input id="m-data" type="date">
+      <label>Horário</label><input id="m-hora" type="time">
+      <label>Tema da conversa</label><input id="m-tema" placeholder="Ex: Everyday Life">
+      <button class="btn" onclick="confirmarAgendamento()">Confirmar</button>
+    </div>
+
+    <!-- 8. NOTIFICAÇÕES -->
+    <div class="screen" id="screen-notificacoes">
+      <div class="back" onclick="showScreen('inicio')">← Voltar</div>
+      <h2>Notificações</h2>
+      <div class="notif">🧡 <span>Você recebeu um novo Match!</span></div>
+      <div class="notif">💬 <span>Ana enviou uma mensagem.</span></div>
+      <div class="notif">📅 <span>Sua conversação com Gabriel será amanhã.</span></div>
+    </div>
+
+    <!-- 9. PERFIL -->
+    <div class="screen" id="screen-perfil">
+      <div class="back" onclick="showScreen('inicio')">← Voltar</div>
+      <div class="profile-header">
+        <div class="avatar" id="perfil-avatar">🙂</div>
+        <div style="font-size:19px;font-weight:700" id="perfil-nome"></div>
+        <div class="profile-line" id="perfil-cidade"></div>
+        <div class="profile-line" id="perfil-nivel"></div>
+      </div>
+      <div class="section-title">Objetivo</div>
+      <div id="perfil-objetivo"></div>
+      <div class="section-title">Interesses</div>
+      <div id="perfil-interesses"></div>
+      <div class="section-title">Sobre mim</div>
+      <p id="perfil-sobre" style="font-size:14px;color:var(--black)"></p>
+      <button class="btn secondary" onclick="alert('Simulação: edição de perfil')">Editar perfil</button>
+    </div>
+
+  </div>
+
+  <div class="bottomnav" id="bottomnav" style="display:none">
+    <button data-s="inicio" onclick="showScreen('inicio')"><span class="ic">🏠</span>Início</button>
+    <button data-s="matches" onclick="showScreen('matches')"><span class="ic">🧡</span>Matches</button>
+    <button data-s="conversas" onclick="showScreen('conversas')"><span class="ic">💬</span>Conversas</button>
+    <button data-s="agenda" onclick="showScreen('agenda')"><span class="ic">📅</span>Agenda</button>
+  </div>
+
+  <div class="overlay" id="overlay-match">
+    <div class="match-box">
+      <h2>It's a Match! 🎉</h2>
+      <p class="sub">Vocês combinaram para praticar inglês!</p>
+      <div class="match-photos">
+        <div class="avatar">🙂</div>
+        <div class="avatar" id="match-avatar">🙂</div>
+      </div>
+      <p style="font-size:14px" id="match-nome"></p>
+      <button class="btn" onclick="goToChatFromMatch()">Conversar</button>
+      <button class="btn secondary" onclick="goToMarcarFromMatch()">Marcar conversação</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---------- ESTADO ----------
+const user = { nome:"Luiza", cidade:"Divinópolis", nivel:"Intermediário",
+  objetivo:"Conversação", interesses:["Filmes","Música","Tecnologia"],
+  sobre:"Quero melhorar meu inglês conversando com outras pessoas." };
+
+const perguntas = [
+  {t:"Qual é o seu nível de inglês?", opts:["Iniciante","Básico","Intermediário","Avançado"]},
+  {t:"Por que você quer praticar inglês?", opts:["Melhorar a conversação","Melhorar a pronúncia","Aumentar o vocabulário","Melhorar a gramática","Perder a vergonha de falar"]},
+  {t:"Que tipo de assunto você gostaria de conversar?", opts:["Dia a dia","Filmes e séries","Música","Viagens","Jogos","Escola e estudos"]},
+  {t:"Como você prefere praticar?", opts:["Texto","Áudio","Chamada de vídeo","Um pouco de cada"]},
+  {t:"Com que frequência quer praticar?", opts:["Todos os dias","Algumas vezes por semana","Uma vez por semana","Quando tiver tempo"]},
+  {t:"Qual horário você prefere?", opts:["Manhã","Tarde","Noite","Qualquer horário"]},
+  {t:"Você prefere conversar com alguém:", opts:["Do mesmo nível","Um pouco mais avançado","Sem preferência"]},
+];
+let qIndex = 0;
+
+const deck = [
+  {nome:"Pedro",idade:18,cidade:"São Paulo",nivel:"Avançado",interesses:"🎮 Jogos • 💻 Tecnologia • ⚽ Esportes",objetivo:"Quero melhorar minha gramática.",compat:74,emoji:"🧑"},
+  {nome:"Marina",idade:16,cidade:"Belo Horizonte",nivel:"Iniciante",interesses:"🎨 Arte • 🎵 Música • 📚 Livros",objetivo:"Quero aumentar meu vocabulário.",compat:68,emoji:"👩"},
+  {nome:"Carlos",idade:17,cidade:"Divinópolis",nivel:"Intermediário",interesses:"🎬 Filmes • ✈️ Viagens",objetivo:"Quero melhorar minha conversação.",compat:85,emoji:"🧑"},
+];
+let deckIndex = 0;
+
+let matches = [
+  {nome:"Ana",emoji:"👩",nivel:"Intermediário", msgs:[{who:"them",text:"Hi! How are you?"},{who:"me",text:"I'm good! And you?"}]},
+  {nome:"Gabriel",emoji:"🧑",nivel:"Avançado", msgs:[{who:"them",text:"Ready for practice tomorrow?"}]},
+  {nome:"Júlia",emoji:"👩",nivel:"Básico", msgs:[]},
+];
+
+let agenda = [
+  {pessoa:"Ana", data:"24/09", hora:"16:00", tema:"Everyday Life"},
+  {pessoa:"Gabriel", data:"27/09", hora:"18:00", tema:"Movies and Series"},
+];
+
+let currentChat = null;
+let pendingMatch = null;
+
+// ---------- NAVEGAÇÃO ----------
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  const mainScreens = ['inicio','matches','conversas','agenda','perfil','notificacoes','comparar','chat','marcar'];
+  const showChrome = mainScreens.includes(id);
+  document.getElementById('topbar').style.display = showChrome ? 'flex' : 'none';
+  document.getElementById('bottomnav').style.display = showChrome ? 'flex' : 'none';
+  document.querySelectorAll('.bottomnav button').forEach(b=>b.classList.toggle('active', b.dataset.s===id));
+  if(id==='inicio') renderSwipe();
+  if(id==='matches') renderMatches();
+  if(id==='conversas') renderConversas();
+  if(id==='agenda') renderAgenda();
+  if(id==='perfil') renderPerfil();
+  if(id==='marcar') renderMarcar();
+}
+
+function startDemo(){
+  document.getElementById('inicio-hello').textContent = 'Olá, '+user.nome+'! 👋';
+  showScreen('inicio');
+}
+
+function startPerguntas(){
+  qIndex = 0;
+  renderQuestion();
+  showScreen('perguntas');
+}
+
+// ---------- PERGUNTAS ----------
+function renderQuestion(){
+  const q = perguntas[qIndex];
+  document.getElementById('q-progress').style.width = ((qIndex)/perguntas.length*100)+'%';
+  document.getElementById('q-title').textContent = q.t;
+  document.getElementById('q-sub').textContent = qIndex===0 ? "Suas respostas ajudam o English Match a encontrar pessoas parecidas com você." : "";
+  const box = document.getElementById('q-options');
+  box.innerHTML='';
+  q.opts.forEach(o=>{
+    const d = document.createElement('div');
+    d.className='choice';
+    d.textContent=o;
+    d.onclick=()=>{ box.querySelectorAll('.choice').forEach(c=>c.classList.remove('selected')); d.classList.add('selected'); };
+    box.appendChild(d);
+  });
+}
+function nextQuestion(){
+  qIndex++;
+  if(qIndex>=perguntas.length){
+    document.getElementById('inicio-hello').textContent = 'Olá, '+ (document.getElementById('c-nome').value || user.nome) +'! 👋';
+    showScreen('inicio');
+  } else {
+    renderQuestion();
+  }
+}
+
+// ---------- SWIPE / DESCOBRIR ----------
+function renderSwipe(){
+  const area = document.getElementById('swipe-area');
+  if(deckIndex >= deck.length){
+    area.innerHTML = '<p class="sub" style="margin-top:40px">Você viu todos os perfis disponíveis por agora. Volte mais tarde!</p>';
+    return;
+  }
+  const p = deck[deckIndex];
+  area.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="stamp like">MATCH</div>
+      <div class="stamp nope">PASSAR</div>
+      <div class="profile-photo">${p.emoji}</div>
+      <div class="profile-name">${p.nome}, ${p.idade}</div>
+      <div class="profile-line">📍 ${p.cidade}</div>
+      <div class="profile-line">🇺🇸 Inglês: ${p.nivel}</div>
+      <div class="tags">${p.interesses}</div>
+      <div class="profile-line" style="font-style:italic">"${p.objetivo}"</div>
+      <div class="compat">${p.compat}% de compatibilidade — vocês têm interesses e objetivos parecidos.</div>
+    </div>
+    <p class="swipe-hint">Arraste o card para o lado, use os botões ou as setas ← → do teclado</p>
+    <div class="swipe-actions">
+      <button class="btn-pass" onclick="passProfile()">❌ Passar</button>
+      <button class="btn-match" onclick="giveMatch()">🧡 Dar Match</button>
+    </div>
+  `;
+  attachSwipe(document.getElementById('active-card'), p);
+}
+
+function attachSwipe(card, profile){
+  let startX=0, dx=0, dragging=false;
+  const like = card.querySelector('.stamp.like');
+  const nope = card.querySelector('.stamp.nope');
+  card.addEventListener('pointerdown', e=>{
+    dragging=true; startX=e.clientX;
+    card.classList.add('dragging');
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    dx = e.clientX - startX;
+    card.style.transform = `translateX(${dx}px) rotate(${dx/16}deg)`;
+    like.style.opacity = Math.max(0, Math.min(dx/80,1));
+    nope.style.opacity = Math.max(0, Math.min(-dx/80,1));
+  });
+  function endDrag(){
+    if(!dragging) return;
+    dragging=false;
+    card.classList.remove('dragging');
+    if(dx > 90){
+      card.style.transform = `translateX(700px) rotate(25deg)`;
+      card.style.opacity='0';
+      setTimeout(giveMatch,180);
+    } else if(dx < -90){
+      card.style.transform = `translateX(-700px) rotate(-25deg)`;
+      card.style.opacity='0';
+      setTimeout(passProfile,180);
+    } else if(Math.abs(dx) < 6){
+      card.style.transform=''; like.style.opacity=0; nope.style.opacity=0;
+      openComparar(profile);
+    } else {
+      card.style.transform=''; like.style.opacity=0; nope.style.opacity=0;
+    }
+    dx=0;
+  }
+  card.addEventListener('pointerup', endDrag);
+  card.addEventListener('pointercancel', endDrag);
+}
+function passProfile(){ deckIndex++; renderSwipe(); }
+function giveMatch(){
+  const p = deck[deckIndex];
+  pendingMatch = p;
+  document.getElementById('match-avatar').textContent = p.emoji;
+  document.getElementById('match-nome').textContent = 'Você e '+p.nome+' agora podem praticar juntos.';
+  document.getElementById('overlay-match').classList.add('active');
+}
+function goToChatFromMatch(){
+  confirmMatchAdd();
+  document.getElementById('overlay-match').classList.remove('active');
+  openChat(pendingMatch.nome);
+}
+function goToMarcarFromMatch(){
+  confirmMatchAdd();
+  document.getElementById('overlay-match').classList.remove('active');
+  showScreen('marcar');
+}
+function confirmMatchAdd(){
+  if(!pendingMatch) return;
+  if(!matches.find(m=>m.nome===pendingMatch.nome)){
+    matches.push({nome:pendingMatch.nome, emoji:pendingMatch.emoji, nivel:pendingMatch.nivel, msgs:[]});
+  }
+  deckIndex++;
+  pendingMatch = null;
+}
+
+function openComparar(p){
+  document.getElementById('compare-list').innerHTML = `
+    <div class="checklist">
+      <div>Nível de inglês parecido (${p.nivel})</div>
+      <div>Interesses em comum: ${p.interesses.replace(/🎬|🎵|✈️|🎮|💻|⚽|🎨|📚/g,'')}</div>
+      <div>Objetivo: ${p.objetivo}</div>
+      <div>Compatibilidade estimada: ${p.compat}%</div>
+    </div>`;
+  showScreen('comparar');
+}
+
+// Setas do teclado (computador): → dá match, ← passa
+document.addEventListener('keydown', e=>{
+  const inicio = document.getElementById('screen-inicio').classList.contains('active');
+  const overlay = document.getElementById('overlay-match').classList.contains('active');
+  if(!inicio || overlay || deckIndex >= deck.length) return;
+  if(e.key==='ArrowRight') giveMatch();
+  if(e.key==='ArrowLeft') passProfile();
+});
+
+// ---------- MATCHES ----------
+function renderMatches(){
+  const box = document.getElementById('matches-list');
+  box.innerHTML='';
+  matches.forEach(m=>{
+    const d=document.createElement('div');
+    d.className='list-item';
+    d.innerHTML = `<div class="avatar">${m.emoji}</div><div class="info"><b>${m.nome}</b><span>Inglês: ${m.nivel}</span></div>`;
+    d.onclick=()=>openChat(m.nome);
+    box.appendChild(d);
+  });
+}
+
+// ---------- CONVERSAS ----------
+function renderConversas(){
+  const box = document.getElementById('conversas-list');
+  box.innerHTML='';
+  matches.forEach(m=>{
+    const last = m.msgs.length ? m.msgs[m.msgs.length-1].text : 'Comecem a conversar!';
+    const d=document.createElement('div');
+    d.className='list-item';
+    d.innerHTML = `<div class="avatar">${m.emoji}</div><div class="info"><b>${m.nome}</b><span>${last}</span></div>`;
+    d.onclick=()=>openChat(m.nome);
+    box.appendChild(d);
+  });
+}
+function openChat(nome){
+  currentChat = matches.find(m=>m.nome===nome);
+  document.getElementById('chat-name').textContent = currentChat.nome;
+  renderChat();
+  showScreen('chat');
+}
+function renderChat(){
+  const box = document.getElementById('chat-messages');
+  box.innerHTML='';
+  if(currentChat.msgs.length===0){
+    box.innerHTML = '<p class="sub">Nenhuma mensagem ainda. Diga oi em inglês!</p>';
+  }
+  currentChat.msgs.forEach(m=>{
+    const b=document.createElement('div');
+    b.className='bubble '+(m.who==='me'?'me':'them');
+    b.textContent=m.text;
+    box.appendChild(b);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+function sendMessage(){
+  const input = document.getElementById('chat-input');
+  if(!input.value.trim()) return;
+  currentChat.msgs.push({who:'me', text:input.value.trim()});
+  input.value='';
+  renderChat();
+}
+
+// ---------- AGENDA ----------
+function renderAgenda(){
+  const box = document.getElementById('agenda-list');
+  box.innerHTML='';
+  if(agenda.length===0){ box.innerHTML = '<p class="sub">Nenhuma conversação marcada ainda.</p>'; }
+  agenda.forEach(a=>{
+    const d=document.createElement('div');
+    d.className='agenda-item';
+    d.innerHTML = `<b>${a.data} — ${a.hora}</b><span>💬 Conversação com ${a.pessoa} · Tema: ${a.tema}</span>`;
+    box.appendChild(d);
+  });
+}
+function renderMarcar(){
+  const sel = document.getElementById('m-pessoa');
+  sel.innerHTML='';
+  matches.forEach(m=>{
+    const o=document.createElement('option'); o.textContent=m.nome; sel.appendChild(o);
+  });
+}
+function confirmarAgendamento(){
+  const pessoa = document.getElementById('m-pessoa').value || (matches[0] && matches[0].nome) || '—';
+  const dataRaw = document.getElementById('m-data').value;
+  const hora = document.getElementById('m-hora').value || '—';
+  const tema = document.getElementById('m-tema').value || 'Conversa livre';
+  const data = dataRaw ? dataRaw.split('-').reverse().slice(0,2).join('/') : '—';
+  agenda.push({pessoa,data,hora,tema});
+  showScreen('agenda');
+}
+
+// ---------- PERFIL ----------
+function renderPerfil(){
+  document.getElementById('perfil-nome').textContent = user.nome+', 16';
+  document.getElementById('perfil-cidade').textContent = '📍 '+user.cidade;
+  document.getElementById('perfil-nivel').textContent = '🇺🇸 Inglês: '+user.nivel;
+  document.getElementById('perfil-objetivo').textContent = user.objetivo;
+  document.getElementById('perfil-interesses').innerHTML = user.interesses.map(i=>`<span class="interest-chip selected">${i}</span>`).join('');
+  document.getElementById('perfil-sobre').textContent = user.sobre;
+}
+</script>
+</body>
+</html>
